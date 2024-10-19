@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# check for consistent use of #include <[file]> vs. #include "[file]", see also
+# https://gcc.gnu.org/onlinedocs/cpp/Include-Syntax.html
+#
+# author: Hanno Böck, license: 0BSD
+
+localheaders="$(find -name \*.h | sed -e 's:.*/::g' | sort -u)"
+quoteheaders="$(grep -rh '^#include "' . | sed -e 's:"$::g' -e 's:.*"::g' -e 's:.*/::g' | sort -u)"
+bracketheaders="$(grep -rh '^#include <' . | sed -e 's:>$::g' -e 's:.*<::g' -e 's:.*/::g' | sort -u)"
+
+echo 'Local headers in <> brackets:'
+comm -12 <(echo "$bracketheaders") <(echo "$localheaders")
+echo ""
+echo 'Non-local headers in "" quotes:'
+comm -23 <(echo "$quoteheaders") <(echo "$localheaders")
