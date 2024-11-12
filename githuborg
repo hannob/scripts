@@ -1,0 +1,16 @@
+#!/bin/bash
+# Get all repos of a GitHub org
+# Author: Hanno Böck, https://hboeck.de/
+# SPDX-License-Identifier: 0BSD
+
+p=0
+
+while true; do
+	((p = p + 1))
+	out=$(curl -s "https://api.github.com/orgs/$1/repos?per_page=100&page=$p" |
+		jq -r .[].clone_url | sed -e 's:\.git$::g')
+	if [ -z "$out" ]; then
+		exit 0
+	fi
+	echo "$out"
+done
