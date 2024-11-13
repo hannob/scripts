@@ -3,6 +3,12 @@
 # Author: Hanno Böck, https://hboeck.de/
 # SPDX-License-Identifier: 0BSD
 
+if [ -z "$1" ]; then
+	echo "Usage:"
+	echo "  $0 [orgname]"
+	exit 1
+fi
+
 p=0
 
 while true; do
