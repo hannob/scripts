@@ -1,22 +1,45 @@
-#!/bin/bash
-# Get all repos of a GitHub org
+#!/usr/bin/python3
+# Get all repos of a GitHub org or user
 # Author: Hanno Böck, https://hboeck.de/
 # SPDX-License-Identifier: 0BSD
 
-if [ -z "$1" ]; then
-	echo "Usage:"
-	echo "  $0 [orgname]"
-	exit 1
-fi
+import argparse
+import json
+import pathlib
+import urllib.request
 
-p=0
+ap = argparse.ArgumentParser()
+ap.add_argument("org", help="Github organization name")
+ap.add_argument("-u", "--user", action="store_true", help="Github user instead of organization")
+ap.add_argument("--print", action="store_true", help="print URLs instead of writing to files")
+args = ap.parse_args()
 
-while true; do
-	((p = p + 1))
-	out=$(curl -s "https://api.github.com/orgs/$1/repos?per_page=100&page=$p" |
-		jq -r .[].clone_url | sed -e 's:\.git$::g')
-	if [ -z "$out" ]; then
-		exit 0
-	fi
-	echo "$out"
-done
+org = args.org
+
+
+furl = f"https://api.github.com/orgs/{org}/repos?per_page=100&page="
+if args.user:
+    furl = f"https://api.github.com/users/{org}/repos?per_page=100&page="
+
+forks = ""
+origs = ""
+
+p = 1
+while True:
+    with urllib.request.urlopen(f"{furl}{p}") as con:
+        j = json.load(con)
+    if not j:
+        break
+    for x in j:
+        if args.print:
+            print(x["html_url"])
+        elif x["fork"]:
+            forks += x["html_url"] + "\n"
+        else:
+            origs += x["html_url"] + "\n"
+    p += 1
+
+if forks != "":
+    pathlib.Path(f"{org}-forks.txt").write_text(forks)
+if origs != "":
+    pathlib.Path(f"{org}-origs.txt").write_text(origs)
