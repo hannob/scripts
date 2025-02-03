@@ -10,16 +10,13 @@ import urllib.request
 
 ap = argparse.ArgumentParser()
 ap.add_argument("org", help="Github organization name")
-ap.add_argument("-u", "--user", action="store_true", help="Github user instead of organization")
 ap.add_argument("--print", action="store_true", help="print URLs instead of writing to files")
 args = ap.parse_args()
 
 org = args.org
 
 
-furl = f"https://api.github.com/orgs/{org}/repos?per_page=100&page="
-if args.user:
-    furl = f"https://api.github.com/users/{org}/repos?per_page=100&page="
+furl = f"https://api.github.com/users/{org}/repos?per_page=100&page="
 
 forks = []
 origs = []
