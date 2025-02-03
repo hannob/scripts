@@ -21,8 +21,8 @@ furl = f"https://api.github.com/orgs/{org}/repos?per_page=100&page="
 if args.user:
     furl = f"https://api.github.com/users/{org}/repos?per_page=100&page="
 
-forks = ""
-origs = ""
+forks = []
+origs = []
 
 p = 1
 while True:
@@ -34,12 +34,12 @@ while True:
         if args.print:
             print(x["html_url"])
         elif x["fork"]:
-            forks += x["html_url"] + "\n"
+            forks.append(x["html_url"])
         else:
-            origs += x["html_url"] + "\n"
+            origs.append(x["html_url"])
     p += 1
 
-if forks != "":
-    pathlib.Path(f"{org}-forks.txt").write_text(forks)
-if origs != "":
-    pathlib.Path(f"{org}-origs.txt").write_text(origs)
+if forks:
+    pathlib.Path(f"{org}-forks.txt").write_text("\n".join(sorted(forks)) + "\n")
+if origs:
+    pathlib.Path(f"{org}-origs.txt").write_text("\n".join(sorted(origs)) + "\n")
