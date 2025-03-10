@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Import .ics file to Nextcloud Calendar
+#
+# Needs a config file ~/.ics2ncrc with settings like this:
+# HOST="example.com"
+# USER="exampleuser"
+# CALENDAR="defaultcalendar"
+# PASS="somepassword"
+# GUIMSG="0"
+#
+# SPDX-License-Identifier: 0BSD
+
+source ~/.ics2ncrc
+
+URL="https://$HOST/remote.php/dav/calendars/$USER/$CALENDAR/$(uuidgen -r)"
+
+out=$(curl -s -X PUT \
+	-u "$USER:$PASS" \
+	-H "Content-Type: text/calendar;charset=UTF-8" \
+	-T <(grep -v '^METHOD:' $1) \
+	$URL)
+
+if [ -n "$out" ]; then
+	echo "$out"
+	if [ "$GUIMSG" = "1" ]; then
+		zenity --text-info --title "ics import failed" --filename <(echo "$out")
+	fi
+else
+	if [ "$GUIMSG" = "1" ]; then
+		zenity --notification --text "ics import successful"
+	fi
+fi
