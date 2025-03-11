@@ -10,10 +10,12 @@
 # GUIMSG="0"
 #
 # SPDX-License-Identifier: 0BSD
+#
+set -euo pipefail
 
 source ~/.ics2ncrc
 
-if [ -z "$1" ]; then
+if [ -z "${1-}" ]; then
 	echo "Usage:"
 	echo "  $0 [ics_file]"
 	exit 1
