@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+# List all projects/repos on a GitLab instance
+# Author: Hanno Böck, https://hboeck.de/
+# SPDX-License-Identifier: 0BSD
+
+import argparse
+import json
+import urllib.request
+
+ap = argparse.ArgumentParser()
+ap.add_argument("url")
+args = ap.parse_args()
+
+APIURL = f"{args.url}/api/v4/projects"
+
+i = 1
+while True:
+    with urllib.request.urlopen(f"{APIURL}?per_page=100&page={i}") as r:
+        j = json.load(r)
+    if j == []:
+        break
+
+    for entry in j:
+        print(entry["web_url"])
+
+    i += 1
