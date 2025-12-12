@@ -1,0 +1,14 @@
+#!/bin/bash
+# SPDX-License-Identifier: 0BSD
+#
+# Removes meta tags and comments from PDFs
+
+if [ -z "$1" ]; then
+	echo "need pdf file"
+fi
+
+cp $1 _$1
+exiftool -all= _$1
+qpdf --linearize _$1 $1.clean.pdf
+rm _$1
+echo "Saved to $1.clean.pdf"
