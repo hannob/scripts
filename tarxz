@@ -1,0 +1,19 @@
+#!/bin/bash
+# SPDX-License-Identifier: 0BSD
+#
+# Create .tar.xz with:
+#  * high compression
+#  * reproducibility
+#  * reduced metadata
+#
+# Motivation for options:
+#  * XZ_OPT="-9" increases compression level (warnings about higher memory use are obsolete,
+#    needs ~64MB for larger dictionary).
+#  * --sort-name supports reproducibility and does not leak file order on filesystem.
+#  * --numeric-owner avoids storing user/group name string
+#  * --owner=0/--group=0 avoids leaking uid/gid
+#  * --format=ustar uses simpler tar format that does not support various metadata fields
+#
+# See also https://reproducible-builds.org/docs/archives/
+
+XZ_OPT="-9" tar --sort=name --owner=0 --group=0 --numeric-owner --format=ustar -cJf "$@"
