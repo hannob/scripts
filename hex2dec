@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: 0BSD
+
+import argparse
+
+ap = argparse.ArgumentParser()
+ap.add_argument("number")
+ap.add_argument("-r", "--reverse", action="store_true")
+args = ap.parse_args()
+
+if args.reverse:
+    i = int(args.number)
+    print(f"{i:x}")
+else:
+    i = int(args.number, 16)
+    print(i)
