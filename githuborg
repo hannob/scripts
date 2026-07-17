@@ -11,6 +11,7 @@ import urllib.request
 ap = argparse.ArgumentParser()
 ap.add_argument("org", help="Github organization name")
 ap.add_argument("--print", action="store_true", help="print URLs instead of writing to files")
+ap.add_argument("-r", "--resume")
 args = ap.parse_args()
 
 org = args.org
@@ -22,9 +23,18 @@ forks = []
 origs = []
 
 p = 1
+if args.resume:
+    p = int(args.resume)
+
+incomplete = False
 while True:
-    with urllib.request.urlopen(f"{furl}{p}") as con:
-        j = json.load(con)
+    try:
+        with urllib.request.urlopen(f"{furl}{p}") as con:
+            j = json.load(con)
+    except urllib.error.HTTPError:
+        incomplete = True
+        print(f"HTTP error at page {p}, incomplete")
+        break
     if not j:
         break
     for x in j:
@@ -36,7 +46,11 @@ while True:
             origs.append(x["html_url"])
     p += 1
 
+ofn = org
+if incomplete:
+    ofn = f"{org}-incomplete-{p}"
+
 if forks:
-    pathlib.Path(f"{org}-forks.txt").write_text("\n".join(sorted(forks)) + "\n")
+    pathlib.Path(f"{ofn}-forks.txt").write_text("\n".join(sorted(forks)) + "\n")
 if origs:
-    pathlib.Path(f"{org}-origs.txt").write_text("\n".join(sorted(origs)) + "\n")
+    pathlib.Path(f"{ofn}-origs.txt").write_text("\n".join(sorted(origs)) + "\n")
