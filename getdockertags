@@ -1,0 +1,18 @@
+#!/bin/bash
+# SPDX-License-Identifier: 0BSD
+#
+# Get available tags for a Docker Hub image
+
+if [ -z "$1" ]; then
+	echo "Usage:"
+	echo -e "\t$0 [imagename]"
+	exit 1
+fi
+
+IMG="$1"
+
+BTOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/$IMG:pull" | jq -r .token)
+
+curl "https://registry-1.docker.io/v2/library/$IMG/tags/list" \
+	-s --header "Authorization: Bearer $BTOKEN" |
+	jq -r ".tags[]"
