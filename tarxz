@@ -12,8 +12,10 @@
 #  * --sort-name supports reproducibility and does not leak file order on filesystem.
 #  * --numeric-owner avoids storing user/group name string
 #  * --owner=0/--group=0 avoids leaking uid/gid
-#  * --format=ustar uses simpler tar format that does not support various metadata fields
+#  * --pax-option=... filters atime/ctime headers
 #
 # See also https://reproducible-builds.org/docs/archives/
 
-XZ_OPT="-9" tar --sort=name --owner=0 --group=0 --numeric-owner --format=ustar -cJf "$@"
+XZ_OPT="-9" tar --sort=name --owner=0 --group=0 --numeric-owner \
+	--pax-option=exthdr.name=%d/PaxHeaders/%f,delete=atime,delete=ctime \
+	-cJf "$@"
