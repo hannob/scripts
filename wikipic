@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: 0BSD
+
+import argparse
+import io
+import pathlib
+import re
+import urllib.request
+
+from PIL import Image
+
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+
+ap = argparse.ArgumentParser()
+ap.add_argument("url")
+ap.add_argument("name")
+ap.add_argument("-c", "--center", action="store_true")
+ap.add_argument("-bottom", "--bottom", action="store_true")
+args = ap.parse_args()
+
+wmurl = args.url.split("?")[0]
+
+req = urllib.request.Request(wmurl, headers={"User-Agent": UA})
+with urllib.request.urlopen(req) as u:
+    data = u.read()
+
+r = re.search(rb"https://upload.wikimedia.org/[a-zA-Z0-9/%._-]*", data)
+
+imgurl = r.group().decode()
+
+li = re.search(rb'title="Category:CC-BY-[A-Z0-9.-]*"', data)
+
+imglicense = None
+if li:
+    imglicense = li.group().decode()[16:-1]
+
+if not imglicense:
+    print("WARNING: no license found")
+
+author = None
+
+a = re.search(rb"Author</td>\n<td>\n[^\n]*", data)
+if a:
+    a = a.group().split(b"\n")[-1]
+    a = re.sub(rb"<[^>]*>", b"", a)
+    author = a.decode()
+if not author:
+    print("WARNING: no author found")
+
+req = urllib.request.Request(imgurl, headers={"User-Agent": UA})
+with urllib.request.urlopen(req) as u:
+    imgraw = u.read()
+
+img = Image.open(io.BytesIO(imgraw))
+width, height = img.size
+newwidth = (width // 16) * 16
+newheight = (newwidth // 16) * 9
+top = 0
+if args.center:
+    top = (height - newheight) // 2
+elif args.bottom:
+    top = height - newheight
+img = img.crop((0, top, newwidth, newheight + top))
+
+if newwidth > 1920:
+    img = img.resize((1920, 1080))
+
+finwidth, finheight = img.size
+
+img.save(f"{args.name}.avif")
+
+
+oo = f'<img src="{args.name}.avif" class="defpic" alt="">\n'
+oo += f'<p class="source">Image: <a href="{wmurl}">{author}, {imglicense}</a></p>'
+
+pathlib.Path(f"{args.name}.txt").write_text(oo)
