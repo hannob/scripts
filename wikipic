@@ -72,6 +72,6 @@ img.save(f"{args.name}.avif")
 
 
 oo = f'<img src="{args.name}.avif" class="defpic" alt="">\n'
-oo += f'<p class="source">Image: <a href="{wmurl}">{author}, {imglicense}</a></p>'
+oo += f'<p class="source">Image: <a href="{wmurl}">{author}, {imglicense}</a></p>\n'
 
 pathlib.Path(f"{args.name}.txt").write_text(oo)
